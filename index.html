@@ -89,6 +89,10 @@ textarea{resize:vertical;min-height:60px;}
 .btn-blue{background:var(--blue-deep);color:#FFF;} .btn-red{background:rgba(192,57,43,.1);color:var(--red);}
 .btn-gray{background:var(--fill);color:var(--label);} .btn-green{background:rgba(30,145,102,.1);color:var(--green);}
 .btn:active, button:active{transform:scale(.97);opacity:.85;transition:transform .08s, opacity .08s;}
+#busyBar{position:fixed;top:0;left:0;right:0;height:3px;z-index:300;background:transparent;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .2s;}
+#busyBar.on{opacity:1;}
+#busyBar:before{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,var(--gold),var(--blue));animation:busySlide 1s ease-in-out infinite;}
+@keyframes busySlide{0%{left:-40%} 100%{left:100%}}
 .sheet-overlay{position:fixed;inset:0;background:rgba(16,24,44,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
 .sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px;animation:slideup .22s ease-out;}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -117,8 +121,9 @@ textarea{resize:vertical;min-height:60px;}
 .doc-icon svg{width:22px;height:22px;}
 .date-field{display:flex;gap:8px;align-items:center;}
 .date-field input[type=text]{flex:1;}
-.date-cal-btn{width:42px;height:42px;flex-shrink:0;border-radius:10px;border:1px solid var(--sep);background:var(--card);font-size:18px;cursor:pointer;}
-.date-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+.date-cal-wrap{position:relative;width:42px;height:42px;flex-shrink:0;}
+.date-cal-btn{width:42px;height:42px;flex-shrink:0;border-radius:10px;border:1px solid var(--sep);background:var(--card);font-size:18px;cursor:pointer;pointer-events:none;}
+.date-native-overlay{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;cursor:pointer;font-size:16px;}
 .field{position:relative;}
 .settings-row.between{display:flex;justify-content:space-between;align-items:center;}
 .switch{position:relative;width:46px;height:27px;flex-shrink:0;}
@@ -130,6 +135,7 @@ input:checked + .slider:before{transform:translateX(-19px);}
 </style>
 </head>
 <body>
+<div id="busyBar"></div>
 <div id="lock-screen"></div>
 <div id="app" class="hidden">
 
@@ -182,6 +188,8 @@ input:checked + .slider:before{transform:translateX(-19px);}
         <input type="file" id="importFile" accept="application/json">
       </div>
     </div>
+    <div class="settings-title">יומן שגיאות</div>
+    <div class="settings-group" id="errorLogGroup"></div>
     <div style="height:20px;"></div>
   </div>
 
@@ -396,9 +404,11 @@ function formatDateTyping(v){
 function dateFieldHTML(id, iso){
   return `<div class="date-field">
     <input type="text" id="${id}" inputmode="numeric" placeholder="DD/MM/YYYY" value="${isoToDMY(iso)}" maxlength="10">
-    <button type="button" class="date-cal-btn" onclick="openNativeDate('${id}')">📅</button>
-  </div>
-  <input type="date" id="${id}_native" class="date-hidden" value="${iso||''}">`;
+    <div class="date-cal-wrap">
+      <button type="button" class="date-cal-btn" tabindex="-1">📅</button>
+      <input type="date" id="${id}_native" class="date-native-overlay" value="${iso||''}">
+    </div>
+  </div>`;
 }
 function initDateField(id){
   const txt = document.getElementById(id);
@@ -531,6 +541,7 @@ function renderPinEntry(el, deviceInfo){
     <button onclick="showLongCodeRecovery()" style="margin-top:14px;background:none;border:none;color:var(--blue);font-family:var(--font);">שכחתי PIN / מכשיר חדש</button>
   `;
   window.tryBiometricUnlock = async function(){
+    showBusy();
     try{
       await unlockWithBiometric(deviceInfo.bio);
       await loadDB();
@@ -538,7 +549,7 @@ function renderPinEntry(el, deviceInfo){
     }catch(e){
       document.getElementById('pinSub').textContent = 'Face ID לא אושר, אפשר להזין PIN';
       document.getElementById('pinSub').style.color='var(--red)';
-    }
+    }finally{ hideBusy(); }
   };
   function renderDots(){
     document.getElementById('pinDots').innerHTML = Array.from({length:8}).map((_,i)=>
@@ -557,6 +568,7 @@ function renderPinEntry(el, deviceInfo){
     pinBuf += k; renderDots();
     if(pinBuf.length>=6){
       // ננסה לפענח אוטומטית אחרי 6 ספרות (האורך המינימלי), ואם נכשל ממתינים לעוד ספרות
+      showBusy();
       try{
         MASTER_KEY = await unwrapMasterKeyWithPin(deviceInfo.wrapped, pinBuf, deviceInfo.pinSalt);
         await loadDB();
@@ -567,7 +579,7 @@ function renderPinEntry(el, deviceInfo){
           document.getElementById('pinSub').style.color='var(--red)';
           pinBuf=''; renderDots();
         }
-      }
+      }finally{ hideBusy(); }
     }
   };
   renderDots(); renderPad();
@@ -670,7 +682,22 @@ setInterval(()=>{
 // כתובת ה-Web App של גוגל אפס-סקריפט (מודבקת אחרי הפריסה - ר' הוראות בקובץ apps-script/Code.gs)
 var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw22MfFVwbsQQwgpggdTUliybqYWB_eSvSPkIjSohGCAvZM48-GmHsuhVhsj_4rPxUQ_w/exec";
 
+var _busyCount = 0;
+function showBusy(){
+  _busyCount++;
+  const bar = document.getElementById('busyBar');
+  if(bar) bar.classList.add('on');
+}
+function hideBusy(){
+  _busyCount = Math.max(0, _busyCount-1);
+  if(_busyCount===0){
+    const bar = document.getElementById('busyBar');
+    if(bar) bar.classList.remove('on');
+  }
+}
+
 function gasCall(fnName, ...args){
+  showBusy();
   return new Promise((resolve,reject)=>{
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -680,11 +707,50 @@ function gasCall(fnName, ...args){
     })
     .then(function(r){ return r.json(); })
     .then(function(res){
-      if(res && res.__error){ reject(new Error(res.__error)); }
+      if(res && res.__error){ logAppError('gasCall:'+fnName, res.__error); reject(new Error(res.__error)); }
       else { resolve(res); }
     })
-    .catch(reject);
+    .catch(function(e){ logAppError('gasCall:'+fnName, e && e.message ? e.message : String(e)); reject(e); })
+    .finally(function(){ hideBusy(); });
   });
+}
+
+/* ---------- יומן שגיאות מקומי (לצורך דיווח/דיבוג) ---------- */
+function logAppError(context, message){
+  try{
+    const log = JSON.parse(localStorage.getItem('mdocs_errlog')||'[]');
+    log.push({ t: new Date().toISOString(), ctx: context, msg: String(message).slice(0,500) });
+    while(log.length>50) log.shift();
+    localStorage.setItem('mdocs_errlog', JSON.stringify(log));
+  }catch(e){}
+}
+window.addEventListener('error', function(e){
+  logAppError('window.onerror', (e && e.message) || 'Unknown error');
+});
+window.addEventListener('unhandledrejection', function(e){
+  logAppError('unhandledrejection', (e.reason && e.reason.message) || String(e.reason));
+});
+function getErrorLogText(){
+  const log = JSON.parse(localStorage.getItem('mdocs_errlog')||'[]');
+  if(!log.length) return 'אין שגיאות רשומות.';
+  return log.map(l=>`[${l.t}] ${l.ctx}: ${l.msg}`).join('\n');
+}
+function copyErrorLog(){
+  copyText(getErrorLogText());
+}
+function clearErrorLog(){
+  localStorage.removeItem('mdocs_errlog');
+  toast('יומן השגיאות נוקה');
+  renderErrorLogSettings();
+}
+function renderErrorLogSettings(){
+  const el = document.getElementById('errorLogGroup');
+  if(!el) return;
+  const log = JSON.parse(localStorage.getItem('mdocs_errlog')||'[]');
+  el.innerHTML = `
+    <div class="settings-row"><label>שגיאות רשומות</label><span style="color:var(--label3);font-size:13px;">${log.length}</span></div>
+    <div class="settings-row"><button class="btn btn-gray" style="margin:0;" onclick="copyErrorLog()">📋 העתק יומן שגיאות</button></div>
+    <div class="settings-row"><button class="btn btn-red" style="margin:0;" onclick="clearErrorLog()">מחיקת היומן</button></div>`;
 }
 
 async function persistDB(){
@@ -1218,6 +1284,7 @@ async function renderSettingsTab(){
   renderRelationTypesSettings();
   renderCountriesSettings();
   renderBiometricRow();
+  renderErrorLogSettings();
 }
 async function renderBiometricRow(){
   const el = document.getElementById('biometricRow');
@@ -1255,11 +1322,13 @@ function renderRelationTypesSettings(){
   const rels = DB.relationTypes && DB.relationTypes.length ? DB.relationTypes : DEFAULT_RELATIONS;
   el.innerHTML = rels.map(r=>`<div class="settings-row"><label>${r}</label>
     ${DEFAULT_RELATIONS.includes(r)?'':`<button onclick="removeRelationType('${r}')" style="background:none;border:none;color:var(--red);">מחק</button>`}</div>`).join('')
-    + `<div class="settings-row"><input type="text" id="newRelationInput" placeholder="קשר חדש, למשל: בן/בת זוג"><button onclick="addRelationType()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
+    + `<div class="settings-row"><input type="text" id="newRelationInput" placeholder="קשר חדש, למשל: בן/בת זוג"><button id="addRelationBtn" onclick="addRelationType()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
 }
 async function addRelationType(){
   const v = document.getElementById('newRelationInput').value.trim();
   if(!v) return;
+  const btn = document.getElementById('addRelationBtn');
+  setBtnLoading(btn, 'מוסיף...');
   DB.relationTypes = DB.relationTypes||DEFAULT_RELATIONS.slice();
   if(!DB.relationTypes.includes(v)) DB.relationTypes.push(v);
   await persistDB(); renderRelationTypesSettings();
@@ -1272,11 +1341,13 @@ function renderCountriesSettings(){
   const el = document.getElementById('countriesGroup');
   el.innerHTML = DB.countries.map(c=>`<div class="settings-row"><label>${c}</label>
     <button onclick="removeCountry('${c}')" style="background:none;border:none;color:var(--red);">מחק</button></div>`).join('')
-    + `<div class="settings-row"><input type="text" id="newCountryInput" placeholder="מדינה חדשה"><button onclick="addCountry()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
+    + `<div class="settings-row"><input type="text" id="newCountryInput" placeholder="מדינה חדשה"><button id="addCountryBtn" onclick="addCountry()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
 }
 async function addCountry(){
   const v = document.getElementById('newCountryInput').value.trim();
   if(!v) return;
+  const btn = document.getElementById('addCountryBtn');
+  setBtnLoading(btn, 'מוסיף...');
   if(!DB.countries.includes(v)) DB.countries.push(v);
   await persistDB(); renderCountriesSettings();
 }
