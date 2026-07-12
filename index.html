@@ -25,8 +25,8 @@
   --font:'Heebo',-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:var(--label);direction:rtl;height:100%;-webkit-font-smoothing:antialiased;}
-#app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:78px;}
+html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:var(--label);direction:rtl;height:100%;-webkit-font-smoothing:antialiased;overflow-x:hidden;width:100%;}
+#app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:78px;overflow-x:hidden;}
 .hidden{display:none !important;}
 .top-header{padding:20px 18px 8px;position:sticky;top:0;background:var(--bg);z-index:5;}
 .top-header h1{font-size:27px;font-weight:800;margin:0;letter-spacing:-0.01em;color:var(--navy);}
@@ -93,8 +93,8 @@ textarea{resize:vertical;min-height:60px;}
 #busyBar.on{opacity:1;}
 #busyBar:before{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,var(--gold),var(--blue));animation:busySlide 1s ease-in-out infinite;}
 @keyframes busySlide{0%{left:-40%} 100%{left:100%}}
-.sheet-overlay{position:fixed;inset:0;background:rgba(16,24,44,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
-.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px;animation:slideup .22s ease-out;}
+.sheet-overlay{position:fixed;inset:0;background:rgba(16,24,44,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;overflow-x:hidden;width:100%;}
+.sheet{background:var(--bg);width:94%;max-width:480px;max-height:92vh;overflow-y:auto;overflow-x:hidden;border-radius:22px 22px 0 0;padding:16px;animation:slideup .22s ease-out;box-sizing:border-box;}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .sheet-header h2{font-size:19px;margin:0;font-weight:800;color:var(--navy);}
@@ -133,6 +133,25 @@ textarea{resize:vertical;min-height:60px;}
 .slider:before{content:"";position:absolute;height:23px;width:23px;left:3px;bottom:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 input:checked + .slider{background:var(--green);}
 input:checked + .slider:before{transform:translateX(-19px);}
+
+/* ---------- מבנה טופס קומפקטי בסגנון "הגדרות" מקורי (iOS/Android) ---------- */
+.form-section-title{font-size:11px;color:var(--label3);text-transform:uppercase;letter-spacing:.05em;margin:16px 4px 6px;font-weight:700;}
+.form-card{background:var(--card);border-radius:13px;border:1px solid var(--sep);overflow:hidden;margin-bottom:4px;}
+.form-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--sep);gap:10px;min-height:38px;}
+.form-row:last-child{border-bottom:none;}
+.form-row .frl{font-size:12.5px;color:var(--label3);flex-shrink:0;min-width:76px;}
+.form-row input[type=text],.form-row input[type=number],.form-row input[type=email],.form-row select{
+  border:none;background:transparent;text-align:right;padding:0;font-size:14px;flex:1;min-width:0;color:var(--label);font-family:var(--font);}
+.form-row input:focus,.form-row select:focus{outline:none;}
+.form-row input[type=file]{flex:1;font-size:12px;}
+.form-block{padding:10px 13px;}
+.form-block .frl{font-size:12.5px;color:var(--label3);display:block;margin-bottom:6px;}
+.form-block textarea{border:none;background:transparent;padding:0;font-size:14px;width:100%;font-family:var(--font);}
+.form-block textarea:focus{outline:none;}
+.reminder-chips{display:flex;flex-wrap:wrap;gap:7px;padding:11px 13px;}
+.chip-check{position:absolute;opacity:0;width:0;height:0;}
+.reminder-chip{padding:6px 13px;border-radius:14px;border:1px solid var(--sep);background:var(--fill);font-size:12px;color:var(--label2);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s;}
+.chip-check:checked + .reminder-chip{background:var(--navy);color:#fff;border-color:var(--navy);}
 </style>
 </head>
 <body>
@@ -1023,23 +1042,39 @@ function openDocForm(docId){
     : `<input type="text" id="docCountry" value="${d?d.country||'':''}">`;
   openSheet(`
     <div class="sheet-header"><h2>${d?'עריכת מסמך':'מסמך חדש'}</h2><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-    <div class="field"><label class="field-label">שייך ל</label>
-      <select id="docFamily">${DB.family.map(f=>`<option value="${f.id}" ${d&&d.familyId===f.id?'selected':''}>${f.nameHe}</option>`).join('')}</select></div>
-    <div class="field"><label class="field-label">סוג מסמך</label>
-      <select id="docType">${DOC_TYPES.map(t=>`<option value="${t.id}" ${d&&d.type===t.id?'selected':''}>${t.label}</option>`).join('')}</select></div>
-    <div class="field"><label class="field-label">מספר מסמך</label><input type="text" id="docNumber" value="${d?d.docNumber||'':''}"></div>
-    <div class="field"><label class="field-label">מדינה</label>${countryOptions}</div>
-    <div class="field"><label class="field-label">תאריך הנפקה</label>${dateFieldHTML('docIssue', d?d.issueDate:'')}</div>
-    <div class="field"><label class="field-label">תאריך תפוגה</label>${dateFieldHTML('docExpiry', d?d.expiryDate:'')}</div>
-    <div class="field"><label class="field-label">תמונת מסמך</label>
-      <input type="file" id="docImage" accept="image/*">
-      <div id="imgPreviewWrap">${d&&d.hasImage?'<div style="font-size:13px;color:var(--label3);margin-top:6px;">📎 יש כבר תמונה שמורה (מוצפנת)</div>':''}</div>
-      ${d&&d.hasImage?'<button type="button" class="btn btn-red" id="deleteImgBtn" style="margin-top:8px;" onclick="markImageForDeletion()">🗑 מחיקת התמונה המצורפת</button>':''}
+
+    <div class="form-section-title">פרטי מסמך</div>
+    <div class="form-card">
+      <div class="form-row"><span class="frl">שייך ל</span><select id="docFamily">${DB.family.map(f=>`<option value="${f.id}" ${d&&d.familyId===f.id?'selected':''}>${f.nameHe}</option>`).join('')}</select></div>
+      <div class="form-row"><span class="frl">סוג מסמך</span><select id="docType">${DOC_TYPES.map(t=>`<option value="${t.id}" ${d&&d.type===t.id?'selected':''}>${t.label}</option>`).join('')}</select></div>
+      <div class="form-row"><span class="frl">מספר מסמך</span><input type="text" id="docNumber" value="${d?d.docNumber||'':''}"></div>
+      <div class="form-row"><span class="frl">מדינה</span>${countryOptions}</div>
     </div>
-    <div class="field"><label class="field-label">תזכורות</label>
-      ${REMINDER_OPTIONS.map(r=>`<div class="checkbox-row"><input type="checkbox" id="rem_${r.days}" ${d&&d.reminders&&d.reminders.includes(r.days)?'checked':''}><label for="rem_${r.days}">${r.label}</label></div>`).join('')}
+
+    <div class="form-section-title">תאריכים</div>
+    <div class="form-card">
+      <div class="form-row"><span class="frl">הנפקה</span>${dateFieldHTML('docIssue', d?d.issueDate:'')}</div>
+      <div class="form-row"><span class="frl">תפוגה</span>${dateFieldHTML('docExpiry', d?d.expiryDate:'')}</div>
     </div>
-    <div class="field"><label class="field-label">הערות</label><textarea id="docNotes">${d?d.notes||'':''}</textarea></div>
+
+    <div class="form-section-title">תמונת מסמך</div>
+    <div class="form-card">
+      <div class="form-row"><input type="file" id="docImage" accept="image/*"></div>
+      ${d&&d.hasImage?`<div class="form-row"><span style="font-size:12.5px;color:var(--label3);">📎 יש תמונה שמורה (מוצפנת)</span></div><div class="form-row"><button type="button" style="background:none;border:none;color:var(--red);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;padding:4px 0;" id="deleteImgBtn" onclick="markImageForDeletion()">🗑 מחיקת התמונה</button></div>`:''}
+      <div id="imgPreviewWrap"></div>
+    </div>
+
+    <div class="form-section-title">תזכורות</div>
+    <div class="form-card">
+      <div class="reminder-chips">
+        ${REMINDER_OPTIONS.map(r=>`<input type="checkbox" class="chip-check" id="rem_${r.days}" ${d&&d.reminders&&d.reminders.includes(r.days)?'checked':''}><label for="rem_${r.days}" class="reminder-chip">${r.label}</label>`).join('')}
+      </div>
+    </div>
+
+    <div class="form-section-title">הערות</div>
+    <div class="form-card"><div class="form-block"><textarea id="docNotes" rows="3">${d?d.notes||'':''}</textarea></div></div>
+
+    <div style="height:6px;"></div>
     <button class="btn btn-blue" onclick="saveDocForm()">שמירה</button>
     ${d?`<button class="btn btn-gray" onclick="toggleArchiveDoc('${d.id}')">${d.archived?'שחזור מהארכיון':'העברה לארכיון'}</button>`:''}
     ${d?`<button class="btn btn-red" onclick="deleteDocConfirm('${d.id}')">מחיקת מסמך</button>`:''}
@@ -1256,11 +1291,14 @@ function openFamilyForm(famId){
   const relOptions = relations.includes(defaultRelation) ? relations : [defaultRelation, ...relations];
   openSheet(`
     <div class="sheet-header"><h2>${f?'עריכת בן משפחה':'בן משפחה חדש'}</h2><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-    <div class="field"><label class="field-label">שם בעברית</label><input type="text" id="famNameHe" value="${f?f.nameHe:''}"></div>
-    <div class="field"><label class="field-label">שם באנגלית (כמו בדרכון)</label><input type="text" id="famNameEn" value="${f?f.nameEn||'':''}"></div>
-    <div class="field"><label class="field-label">תאריך לידה</label>${dateFieldHTML('famBirth', f?f.birthDate:'')}</div>
-    <div class="field"><label class="field-label">קשר משפחתי</label>
-      <select id="famRelation">${relOptions.map(r=>`<option ${r===defaultRelation?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="form-section-title">פרטים אישיים</div>
+    <div class="form-card">
+      <div class="form-row"><span class="frl">שם בעברית</span><input type="text" id="famNameHe" value="${f?f.nameHe:''}"></div>
+      <div class="form-row"><span class="frl">שם באנגלית</span><input type="text" id="famNameEn" value="${f?f.nameEn||'':''}"></div>
+      <div class="form-row"><span class="frl">תאריך לידה</span>${dateFieldHTML('famBirth', f?f.birthDate:'')}</div>
+      <div class="form-row"><span class="frl">קשר משפחתי</span><select id="famRelation">${relOptions.map(r=>`<option ${r===defaultRelation?'selected':''}>${r}</option>`).join('')}</select></div>
+    </div>
+    <div style="height:6px;"></div>
     <button class="btn btn-blue" onclick="saveFamilyForm()">שמירה</button>
     ${f?`<button class="btn btn-red" onclick="deleteFamilyConfirm('${f.id}')">מחיקת בן משפחה</button>`:''}
   `);
