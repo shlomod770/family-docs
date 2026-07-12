@@ -88,6 +88,7 @@ textarea{resize:vertical;min-height:60px;}
 .btn{display:block;width:100%;padding:14px;border-radius:13px;border:none;font-size:15.5px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:10px;letter-spacing:0.01em;}
 .btn-blue{background:var(--blue-deep);color:#FFF;} .btn-red{background:rgba(192,57,43,.1);color:var(--red);}
 .btn-gray{background:var(--fill);color:var(--label);} .btn-green{background:rgba(30,145,102,.1);color:var(--green);}
+.btn:active, button:active{transform:scale(.97);opacity:.85;transition:transform .08s, opacity .08s;}
 .sheet-overlay{position:fixed;inset:0;background:rgba(16,24,44,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
 .sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px;animation:slideup .22s ease-out;}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -460,14 +461,34 @@ function renderFirstTimeSetup(el){
       <div class="longcode-warning">⚠️ תכף תבחרו <b>קוד ארוך</b> - זה מפתח ההצפנה האמיתי. הוא לא נשמר בשום מקום (לא בשרת ולא בענן).
       <b>רשמו אותו על פתק פיזי</b> ושמרו במקום בטוח. אם תשכחו אותו ואין מכשיר מאושר אחר - <b>אין דרך לשחזר את הנתונים</b>.</div>
       <div class="field"><label class="field-label">בחרו קוד ארוך (לפחות 10 תווים)</label>
-        <input type="password" id="setupLongCode" placeholder="קוד ארוך וייחודי"></div>
+        <input type="password" id="setupLongCode" placeholder="קוד ארוך וייחודי" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></div>
       <div class="field"><label class="field-label">אימות קוד ארוך</label>
-        <input type="password" id="setupLongCode2" placeholder="הקלידו שוב"></div>
+        <input type="password" id="setupLongCode2" placeholder="הקלידו שוב" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></div>
+      <button type="button" onclick="toggleCodeVisibility(['setupLongCode','setupLongCode2'], this)" style="background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;font-family:var(--font);padding:0 0 12px;cursor:pointer;">👁 הצג/הסתר את הקוד שהקלדתי</button>
       <div class="field"><label class="field-label">בחרו קוד PIN (6-8 ספרות) לשימוש יומיומי</label>
         <input type="password" id="setupPin" inputmode="numeric" placeholder="לדוגמה 1234"></div>
-      <button class="btn btn-blue" onclick="doFirstTimeSetup()">התחלה</button>
+      <button class="btn btn-blue" id="setupBtn" onclick="doFirstTimeSetup()">התחלה</button>
       <div id="setupError" style="color:var(--red);font-size:13px;text-align:center;"></div>
     </div>`;
+}
+function toggleCodeVisibility(ids, btn){
+  ids.forEach(id=>{
+    const inp = document.getElementById(id);
+    inp.type = (inp.type==='password') ? 'text' : 'password';
+  });
+}
+function setBtnLoading(btn, loadingText){
+  if(!btn) return;
+  btn.dataset.origText = btn.dataset.origText || btn.textContent;
+  btn.disabled = true;
+  btn.style.opacity = '0.65';
+  btn.textContent = loadingText || 'רגע אחד...';
+}
+function clearBtnLoading(btn){
+  if(!btn) return;
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  if(btn.dataset.origText) btn.textContent = btn.dataset.origText;
 }
 
 async function doFirstTimeSetup(){
@@ -475,19 +496,27 @@ async function doFirstTimeSetup(){
   const lc2 = document.getElementById('setupLongCode2').value;
   const pin = document.getElementById('setupPin').value;
   const err = document.getElementById('setupError');
+  const btn = document.getElementById('setupBtn');
+  err.textContent = '';
   if (lc1.length < 10){err.textContent='הקוד הארוך חייב לפחות 10 תווים'; return;}
   if (lc1 !== lc2){err.textContent='הקודים הארוכים אינם תואמים'; return;}
   if (!/^[0-9]{6,8}$/.test(pin)){err.textContent='PIN חייב להיות 6-8 ספרות (מינימום 6, לביטחון)'; return;}
 
-  const masterSalt = b64(randBytes(16));
-  const pinSalt = b64(randBytes(16));
-  MASTER_KEY = await deriveKey(lc1, masterSalt, 210000);
-  const wrapped = await wrapMasterKeyWithPin(MASTER_KEY, pin, pinSalt);
-  localSet('mdocs_device', {wrapped, pinSalt, masterSalt});
+  setBtnLoading(btn, 'יוצר הצפנה...');
+  try{
+    const masterSalt = b64(randBytes(16));
+    const pinSalt = b64(randBytes(16));
+    MASTER_KEY = await deriveKey(lc1, masterSalt, 210000);
+    const wrapped = await wrapMasterKeyWithPin(MASTER_KEY, pin, pinSalt);
+    localSet('mdocs_device', {wrapped, pinSalt, masterSalt});
 
-  DB = {family:[], documents:[], countries:[], relationTypes: DEFAULT_RELATIONS.slice(), salt: masterSalt};
-  await persistDB();
-  unlockApp();
+    DB = {family:[], documents:[], countries:[], relationTypes: DEFAULT_RELATIONS.slice(), salt: masterSalt};
+    await persistDB();
+    unlockApp();
+  }catch(e){
+    clearBtnLoading(btn);
+    err.textContent = 'שגיאה בהתחברות לשרת: ' + (e && e.message ? e.message : 'בדקו את חיבור האינטרנט ואת כתובת ה-Apps Script בקובץ');
+  }
 }
 
 function renderPinEntry(el, deviceInfo){
@@ -555,9 +584,10 @@ function showLongCodeRecovery(isNewDevice){
     <div class="lock-title">${title}</div>
     <div class="lock-sub" style="margin-bottom:16px;">${sub}</div>
     <div class="longcode-box">
-      <div class="field"><label class="field-label">קוד ארוך</label><input type="password" id="recLongCode"></div>
+      <div class="field"><label class="field-label">קוד ארוך</label><input type="password" id="recLongCode" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></div>
+      <button type="button" onclick="toggleCodeVisibility(['recLongCode'], this)" style="background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;font-family:var(--font);padding:0 0 12px;cursor:pointer;">👁 הצג/הסתר את הקוד שהקלדתי</button>
       <div class="field"><label class="field-label">PIN חדש למכשיר זה (6-8 ספרות)</label><input type="password" id="recPin" inputmode="numeric"></div>
-      <button class="btn btn-blue" onclick="doDeviceRecovery()">חבר מכשיר</button>
+      <button class="btn btn-blue" id="recBtn" onclick="doDeviceRecovery()">חבר מכשיר</button>
       ${isNewDevice?'':'<button class="btn btn-gray" onclick="initLockScreen()">חזרה</button>'}
       <div id="recError" style="color:var(--red);font-size:13px;text-align:center;"></div>
     </div>`;
@@ -567,12 +597,15 @@ async function doDeviceRecovery(){
   const lc = document.getElementById('recLongCode').value;
   const pin = document.getElementById('recPin').value;
   const err = document.getElementById('recError');
+  const btn = document.getElementById('recBtn');
+  err.textContent = '';
   if(!/^[0-9]{6,8}$/.test(pin)){err.textContent='PIN חייב להיות 6-8 ספרות (מינימום 6, לביטחון)'; return;}
+  setBtnLoading(btn, 'בודק את הקוד...');
   try{
     // אנחנו לא יודעים את ה-salt המקורי מבלי לטעון קודם את הנתונים -
     // הנתונים המוצפנים בשרת כוללים את ה-salt כשדה גלוי בתחילת הקובץ.
     const resp = await gasCall('loadEncryptedData');
-    if(!resp.exists){ err.textContent='לא נמצאו נתונים בשרת עדיין'; return; }
+    if(!resp.exists){ clearBtnLoading(btn); err.textContent='לא נמצאו נתונים בשרת עדיין'; return; }
     const wrapper = JSON.parse(resp.payload);
     const testKey = await deriveKey(lc, wrapper.salt, 210000);
     DB = await aesDecryptJSON(testKey, wrapper.payload); // אם הקוד שגוי - תיזרק שגיאה כאן
@@ -582,6 +615,7 @@ async function doDeviceRecovery(){
     localSet('mdocs_device', {wrapped, pinSalt, masterSalt: wrapper.salt});
     unlockApp();
   }catch(e){
+    clearBtnLoading(btn);
     err.textContent = 'קוד ארוך שגוי, או שאין עדיין נתונים בשרת';
   }
 }
