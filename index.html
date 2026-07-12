@@ -19,9 +19,9 @@
   --gold:#B4862F; --green:#1E9166; --orange:#C9791A; --red:#C0392B; --purple:#7C5CBF;
   --label:#16223F; --label2:rgba(22,34,63,0.78); --label3:#707A8C;
   --sep:rgba(22,34,63,0.09); --fill:rgba(22,34,63,0.05); --fill2:rgba(22,34,63,0.12);
-  --shadow:0 1px 2px rgba(22,34,63,0.04),0 8px 24px rgba(22,34,63,0.07);
-  --shadow-sm:0 1px 2px rgba(22,34,63,0.05),0 2px 8px rgba(22,34,63,0.05);
-  --r:16px; --r-lg:22px;
+  --shadow:0 1px 2px rgba(22,34,63,0.03),0 6px 20px rgba(22,34,63,0.055);
+  --shadow-sm:0 1px 2px rgba(22,34,63,0.035),0 3px 10px rgba(22,34,63,0.045);
+  --r:18px; --r-lg:24px;
   --font:'Heebo',-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -33,7 +33,7 @@ html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:
 .search-wrap{padding:4px 16px 8px;}
 .search-input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--sep);background:var(--card);font-size:15px;font-family:var(--font);}
 .pills{display:flex;gap:10px;padding:6px 16px 14px;}
-.pill{flex:1;background:var(--card);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--sep);padding:14px 8px 12px;text-align:center;position:relative;overflow:hidden;}
+.pill{flex:1;background:var(--card);border-radius:18px;box-shadow:var(--shadow-sm);border:1px solid rgba(22,34,63,0.045);padding:15px 8px 13px;text-align:center;position:relative;overflow:hidden;}
 .pill:before{content:"";position:absolute;top:0;right:0;left:0;height:3px;background:var(--fill2);}
 .pill.r:before{background:var(--red);} .pill.o:before{background:var(--orange);} .pill.g:before{background:var(--green);}
 .pill-num{font-size:23px;font-weight:800;line-height:1;letter-spacing:-0.02em;}
@@ -45,7 +45,7 @@ html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:
 .filter-bar-btn{padding:6px 16px;}
 .filter-bar-btn button{background:none;border:none;color:var(--blue);font-size:13px;font-weight:700;font-family:var(--font);}
 .list{padding:8px 16px 16px;}
-.doc-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin-bottom:11px;overflow:hidden;cursor:pointer;transition:transform .14s, box-shadow .14s;}
+.doc-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid rgba(22,34,63,0.045);margin-bottom:12px;overflow:hidden;cursor:pointer;transition:transform .14s, box-shadow .14s;}
 .doc-card:active{transform:scale(.975);}
 .strip{height:3px;}
 .strip.ok{background:var(--green);} .strip.warning{background:var(--orange);} .strip.warn2{background:#B08A00;} .strip.critical{background:var(--red);} .strip.expired{background:var(--label3);}
@@ -71,10 +71,10 @@ html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:
 .tab-icon{font-size:21px;display:block;}
 .tab-lbl{font-size:10px;margin-top:2px;font-weight:600;}
 .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue) 0%,var(--navy) 100%);display:flex;align-items:center;justify-content:center;color:#FFF;font-size:16px;font-weight:700;flex-shrink:0;}
-.fam-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin-bottom:11px;padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;}
+.fam-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid rgba(22,34,63,0.045);margin-bottom:12px;padding:15px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;}
 .fam-name{font-size:16px;font-weight:700;color:var(--navy);}
 .fam-rel{font-size:13px;color:var(--label3);}
-.settings-group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin:0 16px 16px;overflow:hidden;}
+.settings-group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid rgba(22,34,63,0.045);margin:0 16px 16px;overflow:hidden;}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--sep);}
 .settings-row:last-child{border-bottom:none;}
 .settings-row label{font-size:15px;}
@@ -136,7 +136,7 @@ input:checked + .slider:before{transform:translateX(-19px);}
 
 /* ---------- מבנה טופס קומפקטי בסגנון "הגדרות" מקורי (iOS/Android) ---------- */
 .form-section-title{font-size:11px;color:var(--label3);text-transform:uppercase;letter-spacing:.05em;margin:16px 4px 6px;font-weight:700;}
-.form-card{background:var(--card);border-radius:13px;border:1px solid var(--sep);overflow:hidden;margin-bottom:4px;}
+.form-card{background:var(--card);border-radius:16px;border:1px solid rgba(22,34,63,0.045);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:4px;}
 .form-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--sep);gap:10px;min-height:38px;}
 .form-row:last-child{border-bottom:none;}
 .form-row .frl{font-size:12.5px;color:var(--label3);flex-shrink:0;min-width:76px;}
@@ -152,6 +152,10 @@ input:checked + .slider:before{transform:translateX(-19px);}
 .chip-check{position:absolute;opacity:0;width:0;height:0;}
 .reminder-chip{padding:6px 13px;border-radius:14px;border:1px solid var(--sep);background:var(--fill);font-size:12px;color:var(--label2);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s;}
 .chip-check:checked + .reminder-chip{background:var(--navy);color:#fff;border-color:var(--navy);}
+.chip-tags{display:flex;flex-wrap:wrap;gap:8px;padding:14px 14px 6px;}
+.tag-chip{display:flex;align-items:center;gap:7px;background:var(--fill);color:var(--label2);border-radius:20px;padding:7px 8px 7px 14px;font-size:13px;font-weight:600;}
+.tag-chip button{background:rgba(0,0,0,.08);border:none;color:var(--label3);width:18px;height:18px;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.chev{color:var(--sep);font-size:15px;margin-left:2px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -1278,6 +1282,7 @@ function renderFamilyTab(){
     return `<div class="fam-card" onclick="openFamilyDetail('${f.id}')" style="position:relative;">
       <div class="av">${initials}</div>
       <div style="flex:1;"><div class="fam-name">${f.nameHe}</div><div class="fam-rel">${f.relation} · ${count} מסמכים</div></div>
+      <span class="chev">‹</span>
       ${urgentCount>0?`<div style="position:absolute;left:14px;top:14px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;line-height:1.5;">${urgentCount} דחוף</div>`:''}
     </div>`;
   }).join('');
@@ -1393,9 +1398,10 @@ async function renderBiometricRow(){
 function renderRelationTypesSettings(){
   const el = document.getElementById('relationTypesGroup');
   const rels = DB.relationTypes && DB.relationTypes.length ? DB.relationTypes : DEFAULT_RELATIONS;
-  el.innerHTML = rels.map(r=>`<div class="settings-row"><label>${r}</label>
-    ${DEFAULT_RELATIONS.includes(r)?'':`<button onclick="removeRelationType('${r}')" style="background:none;border:none;color:var(--red);">מחק</button>`}</div>`).join('')
-    + `<div class="settings-row"><input type="text" id="newRelationInput" placeholder="קשר חדש, למשל: בן/בת זוג"><button id="addRelationBtn" onclick="addRelationType()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
+  el.innerHTML = `<div class="chip-tags">` + rels.map(r=>
+    `<div class="tag-chip">${r}${DEFAULT_RELATIONS.includes(r)?'':`<button onclick="removeRelationType('${r}')">✕</button>`}</div>`
+  ).join('') + `</div>`
+    + `<div class="settings-row"><input type="text" id="newRelationInput" placeholder="הוסף קשר חדש (למשל: בן/בת זוג)"><button id="addRelationBtn" onclick="addRelationType()" style="background:none;border:none;color:var(--blue);font-weight:700;">הוסף</button></div>`;
 }
 async function addRelationType(){
   const v = document.getElementById('newRelationInput').value.trim();
@@ -1412,9 +1418,10 @@ async function removeRelationType(r){
 }
 function renderCountriesSettings(){
   const el = document.getElementById('countriesGroup');
-  el.innerHTML = DB.countries.map(c=>`<div class="settings-row"><label>${c}</label>
-    <button onclick="removeCountry('${c}')" style="background:none;border:none;color:var(--red);">מחק</button></div>`).join('')
-    + `<div class="settings-row"><input type="text" id="newCountryInput" placeholder="מדינה חדשה"><button id="addCountryBtn" onclick="addCountry()" style="background:none;border:none;color:var(--blue);font-weight:600;">הוסף</button></div>`;
+  el.innerHTML = `<div class="chip-tags">` + DB.countries.map(c=>
+    `<div class="tag-chip">${c}<button onclick="removeCountry('${c}')">✕</button></div>`
+  ).join('') + `</div>`
+    + `<div class="settings-row"><input type="text" id="newCountryInput" placeholder="הוסף מדינה חדשה (למשל: ישראל)"><button id="addCountryBtn" onclick="addCountry()" style="background:none;border:none;color:var(--blue);font-weight:700;">הוסף</button></div>`;
 }
 async function addCountry(){
   const v = document.getElementById('newCountryInput').value.trim();
