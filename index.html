@@ -119,6 +119,7 @@ textarea{resize:vertical;min-height:60px;}
 .chip-cat{font-size:11px;color:var(--label3);margin:4px 16px 0;}
 .doc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .doc-icon svg{width:22px;height:22px;}
+.img-flag{position:absolute;bottom:-3px;left:-3px;background:var(--card);border-radius:50%;width:17px;height:17px;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);}
 .date-field{display:flex;gap:8px;align-items:center;}
 .date-field input[type=text]{flex:1;}
 .date-cal-wrap{position:relative;width:42px;height:42px;flex-shrink:0;}
@@ -375,9 +376,9 @@ const DOC_TYPES = [
   {id:'visa', label:'ויזה'},
   {id:'other', label:'מסמך אחר'}
 ];
-function docIconHtml(typeId){
+function docIconHtml(typeId, hasImage){
   const color = ICON_COLORS[typeId] || '#8E8E93';
-  return `<div class="doc-icon" style="background:${color}1A;color:${color};">${ICON_SVG[typeId]||ICON_SVG.other}</div>`;
+  return `<div class="doc-icon" style="background:${color}1A;color:${color};position:relative;">${ICON_SVG[typeId]||ICON_SVG.other}${hasImage?'<div class="img-flag">📎</div>':''}</div>`;
 }
 const REMINDER_OPTIONS = [
   {days:180, label:'6 חודשים לפני'},{days:90, label:'3 חודשים לפני'},{days:30, label:'30 יום לפני'},
@@ -939,7 +940,7 @@ function renderDocsTab(){
     return `<div class="doc-card" onclick="openDocDetail('${d.id}')">
       <div class="strip ${stripClass}"></div>
       <div class="doc-body">
-        ${docIconHtml(d.type)}
+        ${docIconHtml(d.type, d.hasImage)}
         <div class="doc-info">
           <div class="doc-name">${fam?fam.nameHe:'?'} ${d.archived?'· בארכיון':''}</div>
           <div class="doc-type">${meta.label}${d.country?' · '+d.country:''}${d.hasImage?' · 📎':''}</div>
@@ -968,7 +969,7 @@ function renderArchiveList(){
     const fam = DB.family.find(f=>f.id===d.familyId); const meta = docTypeMeta(d.type);
     return `<div class="doc-card" onclick="closeSheet();openDocDetail('${d.id}')">
       <div class="strip expired"></div>
-      <div class="doc-body">${docIconHtml(d.type)}
+      <div class="doc-body">${docIconHtml(d.type, d.hasImage)}
       <div class="doc-info"><div class="doc-name">${fam?fam.nameHe:'?'}</div><div class="doc-type">${meta.label}${d.expiryDate?' · '+formatDDMMYYYY(d.expiryDate):''}</div></div></div></div>`;
   }).join('');
 }
@@ -1110,7 +1111,14 @@ async function saveDocForm(){
   try{
     if(pendingImageBase64){
       const encImg = await aesEncryptText(MASTER_KEY, pendingImageBase64);
-      const res = await gasCall('saveEncryptedImage', doc.imageFileId||null, encImg);
+      let res;
+      try{
+        res = await gasCall('saveEncryptedImage', doc.imageFileId||null, encImg);
+      }catch(imgErr){
+        // ניסיון שני - תמונות רגישות יותר לרשת לא יציבה (במיוחד מובייל)
+        logAppError('saveEncryptedImage:retry', imgErr && imgErr.message ? imgErr.message : String(imgErr));
+        res = await gasCall('saveEncryptedImage', doc.imageFileId||null, encImg);
+      }
       doc.imageFileId = res.fileId;
       doc.imageMime = pendingImageMime;
       doc.hasImage = true;
@@ -1118,7 +1126,8 @@ async function saveDocForm(){
     await persistDB();
     toast('נשמר בהצלחה ✓');
   }catch(e){
-    if(!e || e.message!=='conflict') toast('שגיאה בשמירה - בדקו חיבור לאינטרנט ונסו שוב');
+    logAppError('saveDocForm', e && e.message ? e.message : String(e));
+    if(!e || e.message!=='conflict') toast('שגיאה בשמירה: ' + (e && e.message ? e.message : 'בדקו חיבור לאינטרנט') + ' — פרטים ביומן שגיאות בהגדרות');
   }
   }finally{ window._savingDoc = false; }
 }
@@ -1204,9 +1213,12 @@ function renderFamilyTab(){
   const el = document.getElementById('famList');
   if(!DB.family.length){ el.innerHTML = '<div class="empty-state">אין עדיין בני משפחה. הוסיפו באמצעות כפתור ה-+</div>'; return; }
   el.innerHTML = DB.family.map(f=>{
-    const count = DB.documents.filter(d=>d.familyId===f.id && !d.archived).length;
+    const famDocs = DB.documents.filter(d=>d.familyId===f.id && !d.archived);
+    const count = famDocs.length;
+    const urgentCount = famDocs.filter(d=>statusOf(d)==='critical').length;
     const initials = (f.nameHe||'?').trim().slice(0,2);
     return `<div class="fam-card" onclick="openFamilyDetail('${f.id}')">
+      ${urgentCount>0?`<div class="badge b-red" style="flex-shrink:0;">${urgentCount} דחוף</div>`:''}
       <div class="av">${initials}</div>
       <div style="flex:1;"><div class="fam-name">${f.nameHe}</div><div class="fam-rel">${f.relation} · ${count} מסמכים</div></div>
     </div>`;
@@ -1269,7 +1281,7 @@ function openFamilyDetail(id){
     <div style="margin-top:10px;">
     ${docs.map(d=>{
       const meta = docTypeMeta(d.type);
-      return `<div class="doc-card" onclick="closeSheet();openDocDetail('${d.id}')"><div class="doc-body">${docIconHtml(d.type)}<div class="doc-info"><div class="doc-name">${meta.label}</div><div class="doc-type">${daysLabel(daysUntil(d.expiryDate))}</div></div></div></div>`;
+      return `<div class="doc-card" onclick="closeSheet();openDocDetail('${d.id}')"><div class="doc-body">${docIconHtml(d.type, d.hasImage)}<div class="doc-info"><div class="doc-name">${meta.label}</div><div class="doc-type">${daysLabel(daysUntil(d.expiryDate))}</div></div></div></div>`;
     }).join('') || '<div class="empty-state">אין מסמכים</div>'}
     </div>
   `);
@@ -1479,4 +1491,4 @@ if('serviceWorker' in navigator){
 }
 </script>
 </body>
-</html>
+</html>f
