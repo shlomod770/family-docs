@@ -10,98 +10,109 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="מסמכי משפחה">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F2F2F7; --card:#FFFFFF; --blue:#007AFF; --green:#34C759; --orange:#FF9500;
-  --red:#FF3B30; --purple:#AF52DE; --label:#000000; --label2:rgba(60,60,67,0.85);
-  --label3:#8E8E93; --sep:rgba(60,60,67,0.12); --fill:rgba(120,120,128,0.12);
-  --fill2:rgba(120,120,128,0.20); --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.05);
-  --r:14px; --r-lg:20px;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  --bg:#F3F4F7; --card:#FFFFFF; --navy:#16223F; --blue:#2E5AAC; --blue-deep:#1E3E7A;
+  --gold:#B4862F; --green:#1E9166; --orange:#C9791A; --red:#C0392B; --purple:#7C5CBF;
+  --label:#16223F; --label2:rgba(22,34,63,0.78); --label3:#707A8C;
+  --sep:rgba(22,34,63,0.09); --fill:rgba(22,34,63,0.05); --fill2:rgba(22,34,63,0.12);
+  --shadow:0 1px 2px rgba(22,34,63,0.04),0 8px 24px rgba(22,34,63,0.07);
+  --shadow-sm:0 1px 2px rgba(22,34,63,0.05),0 2px 8px rgba(22,34,63,0.05);
+  --r:16px; --r-lg:22px;
+  --font:'Heebo',-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:var(--label);direction:rtl;height:100%;}
+html,body{margin:0;padding:0;background:var(--bg);font-family:var(--font);color:var(--label);direction:rtl;height:100%;-webkit-font-smoothing:antialiased;}
 #app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:78px;}
 .hidden{display:none !important;}
-.top-header{padding:16px 16px 8px;position:sticky;top:0;background:var(--bg);z-index:5;}
-.top-header h1{font-size:26px;font-weight:700;margin:0;}
+.top-header{padding:20px 18px 8px;position:sticky;top:0;background:var(--bg);z-index:5;}
+.top-header h1{font-size:27px;font-weight:800;margin:0;letter-spacing:-0.01em;color:var(--navy);}
 .search-wrap{padding:4px 16px 8px;}
-.search-input{width:100%;padding:10px 14px;border-radius:12px;border:none;background:var(--fill);font-size:15px;font-family:var(--font);}
-.pills{display:flex;gap:11px;padding:6px 16px 12px;}
-.pill{flex:1;background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:13px 10px;text-align:center;}
-.pill-num{font-size:24px;font-weight:700;line-height:1;}
-.pill-lbl{font-size:10px;color:var(--label3);margin-top:3px;}
-.pill-num.r{color:var(--red)} .pill-num.o{color:var(--orange)} .pill-num.g{color:var(--green)} .pill-num.gr{color:#8E8E93}
+.search-input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--sep);background:var(--card);font-size:15px;font-family:var(--font);}
+.pills{display:flex;gap:10px;padding:6px 16px 14px;}
+.pill{flex:1;background:var(--card);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--sep);padding:14px 8px 12px;text-align:center;position:relative;overflow:hidden;}
+.pill:before{content:"";position:absolute;top:0;right:0;left:0;height:3px;background:var(--fill2);}
+.pill.r:before{background:var(--red);} .pill.o:before{background:var(--orange);} .pill.g:before{background:var(--green);}
+.pill-num{font-size:23px;font-weight:800;line-height:1;letter-spacing:-0.02em;}
+.pill-lbl{font-size:10.5px;color:var(--label3);margin-top:5px;font-weight:600;letter-spacing:0.01em;}
+.pill-num.r{color:var(--red)} .pill-num.o{color:var(--orange)} .pill-num.g{color:var(--green)} .pill-num.gr{color:var(--label3)}
 .chips{display:flex;gap:8px;padding:6px 16px 6px;overflow-x:auto;}
-.chip{padding:6px 15px;border-radius:20px;border:none;background:var(--fill);color:var(--label);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .18s;font-family:var(--font);}
-.chip.on{background:var(--blue);color:#FFF;}
+.chip{padding:7px 16px;border-radius:20px;border:1px solid var(--sep);background:var(--card);color:var(--label2);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;font-family:var(--font);}
+.chip.on{background:var(--navy);color:#FFF;border-color:var(--navy);}
 .filter-bar-btn{padding:6px 16px;}
-.filter-bar-btn button{background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;font-family:var(--font);}
+.filter-bar-btn button{background:none;border:none;color:var(--blue);font-size:13px;font-weight:700;font-family:var(--font);}
 .list{padding:8px 16px 16px;}
-.doc-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:11px;overflow:hidden;cursor:pointer;transition:transform .14s;}
+.doc-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin-bottom:11px;overflow:hidden;cursor:pointer;transition:transform .14s, box-shadow .14s;}
 .doc-card:active{transform:scale(.975);}
-.strip{height:4px;}
-.strip.ok{background:var(--green);} .strip.warning{background:var(--orange);} .strip.warn2{background:#d8b400;} .strip.critical{background:var(--red);} .strip.expired{background:#8E8E93;}
+.strip{height:3px;}
+.strip.ok{background:var(--green);} .strip.warning{background:var(--orange);} .strip.warn2{background:#B08A00;} .strip.critical{background:var(--red);} .strip.expired{background:var(--label3);}
 .doc-body{display:flex;align-items:center;padding:14px 16px;gap:13px;}
 .doc-em{font-size:30px;flex-shrink:0;}
 .doc-info{flex:1;min-width:0;}
-.doc-name{font-size:16px;font-weight:600;}
+.doc-name{font-size:16px;font-weight:700;color:var(--navy);}
 .doc-type{font-size:13px;color:var(--label3);margin-top:2px;}
-.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
-.b-red{background:rgba(255,59,48,.12);color:var(--red);} .b-orange{background:rgba(255,149,0,.12);color:var(--orange);}
-.b-yellow{background:rgba(200,160,0,.12);color:#c8a000;} .b-green{background:rgba(52,199,89,.12);color:var(--green);} .b-gray{background:var(--fill);color:var(--label3);}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.b-red{background:rgba(192,57,43,.1);color:var(--red);} .b-orange{background:rgba(201,121,26,.1);color:var(--orange);}
+.b-yellow{background:rgba(176,138,0,.1);color:#8a6d00;} .b-green{background:rgba(30,145,102,.1);color:var(--green);} .b-gray{background:var(--fill);color:var(--label3);}
 .empty-state{text-align:center;color:var(--label3);padding:60px 20px;font-size:14px;}
-.fab{width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;font-size:28px;border:none;
-  box-shadow:0 4px 14px rgba(0,122,255,.4);cursor:pointer;position:absolute;bottom:78px;left:16px;
+.fab{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue) 0%,var(--blue-deep) 100%);color:#fff;font-size:26px;border:none;
+  box-shadow:0 6px 18px rgba(30,62,122,.35);cursor:pointer;position:absolute;bottom:78px;left:16px;
   display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .bottom-wrap{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;z-index:20;pointer-events:none;}
 .bottom-inner{max-width:520px;width:100%;position:relative;pointer-events:none;}
 .bottom-inner > *{pointer-events:auto;}
-.tabbar{position:static;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);
+.tabbar{position:static;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
   border-top:1px solid var(--sep);display:flex;padding:6px 0 max(6px,env(safe-area-inset-bottom));}
-.tab-item{flex:1;text-align:center;background:none;border:none;color:var(--label3);font-family:var(--font);cursor:pointer;padding:4px;}
-.tab-item.active{color:var(--blue);}
-.tab-icon{font-size:22px;display:block;}
-.tab-lbl{font-size:10px;margin-top:2px;}
-.av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#007AFF 0%,#5AC8FA 100%);display:flex;align-items:center;justify-content:center;color:#FFF;font-size:16px;font-weight:700;flex-shrink:0;}
-.fam-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:11px;padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;}
-.fam-name{font-size:16px;font-weight:600;}
+.tab-item{flex:1;text-align:center;background:none;border:none;color:var(--label3);font-family:var(--font);cursor:pointer;padding:4px;transition:color .15s;}
+.tab-item.active{color:var(--blue-deep);}
+.tab-icon{font-size:21px;display:block;}
+.tab-lbl{font-size:10px;margin-top:2px;font-weight:600;}
+.av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue) 0%,var(--navy) 100%);display:flex;align-items:center;justify-content:center;color:#FFF;font-size:16px;font-weight:700;flex-shrink:0;}
+.fam-card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin-bottom:11px;padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;}
+.fam-name{font-size:16px;font-weight:700;color:var(--navy);}
 .fam-rel{font-size:13px;color:var(--label3);}
-.settings-group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);margin:0 16px 16px;overflow:hidden;}
+.settings-group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid var(--sep);margin:0 16px 16px;overflow:hidden;}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--sep);}
 .settings-row:last-child{border-bottom:none;}
 .settings-row label{font-size:15px;}
-.settings-title{font-size:13px;color:var(--label3);margin:18px 16px 6px;}
+.settings-title{font-size:12.5px;color:var(--label3);margin:20px 16px 7px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
 input[type=text],input[type=password],input[type=email],input[type=date],input[type=number],select,textarea{
-  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--sep);background:var(--card);font-size:15px;font-family:var(--font);color:var(--label);}
+  width:100%;padding:11px 12px;border-radius:11px;border:1px solid var(--sep);background:var(--card);font-size:15px;font-family:var(--font);color:var(--label);}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px;}
 textarea{resize:vertical;min-height:60px;}
 .field{margin-bottom:14px;}
-.field-label{font-size:13px;color:var(--label3);margin-bottom:5px;display:block;}
-.btn{display:block;width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;font-weight:600;font-family:var(--font);cursor:pointer;margin-bottom:10px;}
-.btn-blue{background:var(--blue);color:#FFF;} .btn-red{background:rgba(255,59,48,.13);color:var(--red);}
-.btn-gray{background:var(--fill);color:var(--label);} .btn-green{background:rgba(52,199,89,.13);color:var(--green);}
-.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
-.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:16px;animation:slideup .22s ease-out;}
+.field-label{font-size:13px;color:var(--label3);margin-bottom:5px;display:block;font-weight:600;}
+.btn{display:block;width:100%;padding:14px;border-radius:13px;border:none;font-size:15.5px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:10px;letter-spacing:0.01em;}
+.btn-blue{background:var(--blue-deep);color:#FFF;} .btn-red{background:rgba(192,57,43,.1);color:var(--red);}
+.btn-gray{background:var(--fill);color:var(--label);} .btn-green{background:rgba(30,145,102,.1);color:var(--green);}
+.sheet-overlay{position:fixed;inset:0;background:rgba(16,24,44,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px;animation:slideup .22s ease-out;}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.sheet-header h2{font-size:19px;margin:0;}
+.sheet-header h2{font-size:19px;margin:0;font-weight:800;color:var(--navy);}
 .sheet-close{background:var(--fill);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;color:var(--label3);}
 .checkbox-row{display:flex;align-items:center;gap:8px;padding:8px 0;}
 .thumb-preview{max-width:100%;border-radius:12px;margin:8px 0;}
-#lock-screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#lock-screen{position:fixed;inset:0;background:linear-gradient(160deg,var(--navy) 0%,#0E1830 100%);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#lock-screen .lock-title{color:#FFF;}
+#lock-screen .lock-sub{color:rgba(255,255,255,.65);}
+#lock-screen .longcode-box, #lock-screen input{color:var(--label);}
 .pin-dots{display:flex;gap:16px;margin:26px 0;}
-.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--fill2);}
-.pin-dot.filled{background:var(--blue);}
+.pin-dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.18);}
+.pin-dot.filled{background:var(--gold);}
 .pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:16px;direction:ltr;}
-.pin-key{width:72px;height:72px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);border:none;font-size:26px;font-family:var(--font);cursor:pointer;}
-.pin-key:active{background:var(--fill);}
-.lock-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+.pin-key{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.08);color:#FFF;box-shadow:none;border:1px solid rgba(255,255,255,.12);font-size:24px;font-family:var(--font);font-weight:600;cursor:pointer;}
+.pin-key:active{background:rgba(255,255,255,.16);}
+.lock-title{font-size:21px;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em;}
 .lock-sub{font-size:13px;color:var(--label3);text-align:center;max-width:280px;}
 .longcode-box{width:100%;max-width:320px;}
-.longcode-warning{background:rgba(255,149,0,.12);color:#a15c00;padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;line-height:1.6;}
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;z-index:200;}
+.longcode-warning{background:rgba(201,121,26,.12);color:#8a5000;padding:10px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;line-height:1.6;}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 22px;border-radius:20px;font-size:14px;z-index:200;box-shadow:0 6px 18px rgba(0,0,0,.25);}
 .chip-cat{font-size:11px;color:var(--label3);margin:4px 16px 0;}
-.doc-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .doc-icon svg{width:22px;height:22px;}
 .date-field{display:flex;gap:8px;align-items:center;}
 .date-field input[type=text]{flex:1;}
@@ -241,6 +252,93 @@ async function unwrapMasterKeyWithPin(wrappedObj, pin, pinSalt){
   const pinKey = await deriveKey(pin, pinSalt, 150000);
   const raw = await crypto.subtle.decrypt({name:'AES-GCM', iv: unb64(wrappedObj.iv)}, pinKey, unb64(wrappedObj.data));
   return crypto.subtle.importKey('raw', raw, 'AES-GCM', true, ['encrypt','decrypt']);
+}
+
+/* ---------- Face ID / טביעת אצבע (WebAuthn + PRF) ----------
+   PRF (Pseudo-Random Function) היא הרחבה של WebAuthn שמאפשרת לגזור
+   מפתח סודי אמיתי מתוך האימות הביומטרי (ולא רק "לאשר נוכחות").
+   המפתח הזה משמש לעטוף (wrap) את ה-master key, בדיוק כמו ה-PIN,
+   ונשמר מקומית במכשיר בלבד. נתמך ב-Safari/iOS מגרסה 18 ומעלה,
+   ודורש כתובת HTTPS עצמאית (לא iframe) - בדיוק המצב אחרי המעבר. */
+async function biometricAvailable(){
+  if(!(window.PublicKeyCredential && navigator.credentials)) return false;
+  try{
+    if(PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    }
+  }catch(e){}
+  return false;
+}
+async function enrollBiometric(){
+  if(!MASTER_KEY) throw new Error('יש להיות מחוברים כדי להפעיל Face ID');
+  let cred;
+  try{
+    cred = await navigator.credentials.create({
+      publicKey:{
+        challenge: randBytes(32),
+        rp: { name: 'מסמכי משפחה' },
+        user: { id: randBytes(16), name: 'user', displayName: 'משתמש' },
+        pubKeyCredParams: [{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'required' },
+        timeout: 60000,
+        extensions: { prf: {} }
+      }
+    });
+  }catch(e){ throw new Error('הפעולה בוטלה או שהמכשיר לא תומך'); }
+
+  const prfSalt = randBytes(32);
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge: randBytes(32),
+      allowCredentials: [{ id: cred.rawId, type:'public-key' }],
+      userVerification:'required',
+      extensions: { prf: { eval: { first: prfSalt } } }
+    }
+  });
+  const extResults = assertion.getClientExtensionResults();
+  if(!extResults.prf || !extResults.prf.results || !extResults.prf.results.first){
+    throw new Error('המכשיר הזה לא תומך בשמירת מפתח מוצפן דרך Face ID. אפשר להמשיך עם PIN.');
+  }
+  const keyMaterial = await crypto.subtle.digest('SHA-256', extResults.prf.results.first);
+  const bioKey = await crypto.subtle.importKey('raw', keyMaterial, 'AES-GCM', false, ['encrypt']);
+  const iv = randBytes(12);
+  const raw = await crypto.subtle.exportKey('raw', MASTER_KEY);
+  const wrapped = await crypto.subtle.encrypt({name:'AES-GCM', iv}, bioKey, raw);
+
+  const device = localGet('mdocs_device') || {};
+  device.bio = { credId: b64(cred.rawId), prfSalt: b64(prfSalt), wrapped: { iv: b64(iv), data: b64(wrapped) } };
+  localSet('mdocs_device', device);
+}
+async function unlockWithBiometric(bio){
+  const assertion = await navigator.credentials.get({
+    publicKey: {
+      challenge: randBytes(32),
+      allowCredentials: [{ id: unb64(bio.credId), type:'public-key' }],
+      userVerification: 'required',
+      extensions: { prf: { eval: { first: unb64(bio.prfSalt) } } }
+    }
+  });
+  const extResults = assertion.getClientExtensionResults();
+  if(!extResults.prf || !extResults.prf.results || !extResults.prf.results.first) throw new Error('שגיאת Face ID');
+  const keyMaterial = await crypto.subtle.digest('SHA-256', extResults.prf.results.first);
+  const bioKey = await crypto.subtle.importKey('raw', keyMaterial, 'AES-GCM', false, ['decrypt']);
+  const raw = await crypto.subtle.decrypt({name:'AES-GCM', iv: unb64(bio.wrapped.iv)}, bioKey, unb64(bio.wrapped.data));
+  MASTER_KEY = await crypto.subtle.importKey('raw', raw, 'AES-GCM', true, ['encrypt','decrypt']);
+}
+function disableBiometric(){
+  const device = localGet('mdocs_device');
+  if(device){ delete device.bio; localSet('mdocs_device', device); }
+  renderBiometricRow();
+  toast('Face ID כובה במכשיר זה');
+}
+async function doEnrollBiometric(){
+  try{
+    await enrollBiometric();
+    toast('Face ID הופעל בהצלחה ✓');
+  }catch(e){
+    toast(e.message || 'שגיאה בהפעלת Face ID');
+  }
+  renderBiometricRow();
 }
 
 /*************************************************************
@@ -394,13 +492,25 @@ async function doFirstTimeSetup(){
 
 function renderPinEntry(el, deviceInfo){
   let pinBuf = '';
+  const hasBio = !!deviceInfo.bio;
   el.innerHTML = `
     <div class="lock-title">מסמכי משפחה 🔒</div>
     <div class="lock-sub" id="pinSub">הכניסו קוד PIN</div>
+    ${hasBio ? '<button class="btn btn-blue" style="max-width:260px;margin:6px auto 4px;" onclick="tryBiometricUnlock()">🔓 פתיחה עם Face ID</button>' : ''}
     <div class="pin-dots" id="pinDots"></div>
     <div class="pin-pad" id="pinPad"></div>
     <button onclick="showLongCodeRecovery()" style="margin-top:14px;background:none;border:none;color:var(--blue);font-family:var(--font);">שכחתי PIN / מכשיר חדש</button>
   `;
+  window.tryBiometricUnlock = async function(){
+    try{
+      await unlockWithBiometric(deviceInfo.bio);
+      await loadDB();
+      unlockApp();
+    }catch(e){
+      document.getElementById('pinSub').textContent = 'Face ID לא אושר, אפשר להזין PIN';
+      document.getElementById('pinSub').style.color='var(--red)';
+    }
+  };
   function renderDots(){
     document.getElementById('pinDots').innerHTML = Array.from({length:8}).map((_,i)=>
       `<div class="pin-dot ${i<pinBuf.length?'filled':''}"></div>`).join('');
@@ -432,6 +542,7 @@ function renderPinEntry(el, deviceInfo){
     }
   };
   renderDots(); renderPad();
+  if(hasBio){ setTimeout(()=>{ if(window.tryBiometricUnlock) window.tryBiometricUnlock(); }, 350); }
 }
 
 function showLongCodeRecovery(isNewDevice){
@@ -523,7 +634,7 @@ setInterval(()=>{
  * תקשורת עם השרת (Apps Script)
  *************************************************************/
 // כתובת ה-Web App של גוגל אפס-סקריפט (מודבקת אחרי הפריסה - ר' הוראות בקובץ apps-script/Code.gs)
-var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw22MfFVwbsQQwgpggdTUliybqYWB_eSvSPkIjSohGCAvZM48-GmHsuhVhsj_4rPxUQ_w/exec";
+var APPS_SCRIPT_URL = "script.google.com/macros/s/AKfycbw22MfFVwbsQQwgpggdTUliybqYWB_eSvSPkIjSohGCAvZM48-GmHsuhVhsj_4rPxUQ_w/exec";
 
 function gasCall(fnName, ...args){
   return new Promise((resolve,reject)=>{
@@ -696,9 +807,9 @@ function renderDocsTab(){
   const nonArchived = DB.documents.filter(d=>!d.archived);
   const counts = computeCounts(nonArchived);
   document.getElementById('pills').innerHTML = `
-    <div class="pill"><div class="pill-num r">${counts.red}</div><div class="pill-lbl">דחוף</div></div>
-    <div class="pill"><div class="pill-num o">${counts.orange}</div><div class="pill-lbl">בקרוב</div></div>
-    <div class="pill"><div class="pill-num g">${counts.green}</div><div class="pill-lbl">תקין</div></div>
+    <div class="pill r"><div class="pill-num r">${counts.red}</div><div class="pill-lbl">דחוף</div></div>
+    <div class="pill o"><div class="pill-num o">${counts.orange}</div><div class="pill-lbl">בקרוב</div></div>
+    <div class="pill g"><div class="pill-num g">${counts.green}</div><div class="pill-lbl">תקין</div></div>
     <div class="pill"><div class="pill-num gr">${counts.gray}</div><div class="pill-lbl">ללא תפוגה</div></div>`;
 
   document.getElementById('statusChips').innerHTML = ['all','red','orange','green'].map(s=>{
@@ -1074,20 +1185,36 @@ async function renderSettingsTab(){
   renderCountriesSettings();
   renderBiometricRow();
 }
-function renderBiometricRow(){
-  // בדקנו בפועל: WebAuthn (Face ID/טביעת אצבע) לא יכול לפעול כי Google Apps Script
-  // מגיש את האפליקציה בתוך iframe, וה-API הזה חוסם את עצמו כשהמסמך אינו ברמה
-  // העליונה של הדפדפן (שגיאת "origin of the document is not the same as its ancestors").
-  // זו מגבלה של הפלטפורמה שאין לנו דרך לעקוף אותה מתוך הקוד של האפליקציה.
-  document.getElementById('biometricRow').innerHTML = `
-    <div style="width:100%;">
-      <label style="color:var(--label3);">Face ID / טביעת אצבע</label>
-      <div style="font-size:12px;color:var(--label3);margin-top:4px;line-height:1.6;">
-        לצערנו לא נתמך כרגע: אפליקציות המבוססות על Google Apps Script רצות בתוך "מסגרת" פנימית של גוגל,
-        וזיהוי ביומטרי בדפדפן חסום מטעמי אבטחה במצב כזה. זו מגבלת פלטפורמה, לא ניתנת לתיקון בצד שלנו.
-        PIN בן 6-8 ספרות הוא הפתרון הבטוח והמהיר במקרה זה.
-      </div>
-    </div>`;
+async function renderBiometricRow(){
+  const el = document.getElementById('biometricRow');
+  const device = localGet('mdocs_device');
+  const enabled = !!(device && device.bio);
+  if(enabled){
+    el.innerHTML = `
+      <div style="width:100%;">
+        <label>Face ID / טביעת אצבע</label>
+        <div style="font-size:12px;color:var(--green);margin-top:4px;">✅ מופעל במכשיר הזה</div>
+        <button class="btn btn-gray" style="margin-top:8px;" onclick="disableBiometric()">כיבוי במכשיר זה</button>
+      </div>`;
+    return;
+  }
+  const supported = await biometricAvailable();
+  if(supported){
+    el.innerHTML = `
+      <div style="width:100%;">
+        <label>Face ID / טביעת אצבע</label>
+        <div style="font-size:12px;color:var(--label3);margin-top:4px;line-height:1.6;">אפשר לפתוח את האפליקציה עם Face ID/טביעת אצבע במקום PIN, במכשיר הזה בלבד.</div>
+        <button class="btn btn-blue" style="margin-top:8px;" onclick="doEnrollBiometric()">הפעלת Face ID</button>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div style="width:100%;">
+        <label style="color:var(--label3);">Face ID / טביעת אצבע</label>
+        <div style="font-size:12px;color:var(--label3);margin-top:4px;line-height:1.6;">
+          לא זוהה זיהוי ביומטרי נתמך במכשיר/דפדפן הזה כרגע. ודאו שה-Face ID מופעל בהגדרות האייפון, ושאתם נכנסים דרך הכתובת העצמאית (לא מתוך Google). PIN הוא הפתרון הבטוח בכל מקרה.
+        </div>
+      </div>`;
+  }
 }
 function renderRelationTypesSettings(){
   const el = document.getElementById('relationTypesGroup');
@@ -1147,7 +1274,7 @@ async function doChangePin(){
   const device = localGet('mdocs_device');
   const pinSalt = b64(randBytes(16));
   const wrapped = await wrapMasterKeyWithPin(MASTER_KEY, pin, pinSalt);
-  localSet('mdocs_device', {wrapped, pinSalt, masterSalt: device.masterSalt});
+  localSet('mdocs_device', {wrapped, pinSalt, masterSalt: device.masterSalt, bio: device.bio});
   closeSheet(); toast('קוד PIN עודכן');
 }
 async function exportBackupClick(){
