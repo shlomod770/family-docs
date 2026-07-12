@@ -216,7 +216,15 @@ input:checked + .slider:before{transform:translateX(-19px);}
  * המכשיר הזה בלבד. כך שבכניסות הבאות מספיק PIN.
  *************************************************************/
 const enc = new TextEncoder(), dec = new TextDecoder();
-function b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf)));}
+function b64(buf){
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunkSize = 8192;
+  for(let i=0; i<bytes.length; i+=chunkSize){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunkSize));
+  }
+  return btoa(binary);
+}
 function unb64(str){return Uint8Array.from(atob(str),c=>c.charCodeAt(0)).buffer;}
 function randBytes(n){return crypto.getRandomValues(new Uint8Array(n));}
 
@@ -1217,10 +1225,10 @@ function renderFamilyTab(){
     const count = famDocs.length;
     const urgentCount = famDocs.filter(d=>statusOf(d)==='critical').length;
     const initials = (f.nameHe||'?').trim().slice(0,2);
-    return `<div class="fam-card" onclick="openFamilyDetail('${f.id}')">
-      ${urgentCount>0?`<div class="badge b-red" style="flex-shrink:0;">${urgentCount} דחוף</div>`:''}
+    return `<div class="fam-card" onclick="openFamilyDetail('${f.id}')" style="position:relative;">
       <div class="av">${initials}</div>
       <div style="flex:1;"><div class="fam-name">${f.nameHe}</div><div class="fam-rel">${f.relation} · ${count} מסמכים</div></div>
+      ${urgentCount>0?`<div style="position:absolute;left:14px;top:14px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px;line-height:1.5;">${urgentCount} דחוף</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1491,4 +1499,4 @@ if('serviceWorker' in navigator){
 }
 </script>
 </body>
-</html>f
+</html>
