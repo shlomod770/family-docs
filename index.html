@@ -156,6 +156,12 @@ input:checked + .slider:before{transform:translateX(-19px);}
 .tag-chip button{background:rgba(0,0,0,.08);border:none;color:var(--label3);width:18px;height:18px;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 .chev{color:var(--sep);font-size:15px;margin-left:2px;flex-shrink:0;}
 .btn-inline-add{background:var(--blue);color:#fff;border:none;border-radius:14px;padding:13px 22px;font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;flex-shrink:0;min-height:48px;}
+.d-row{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--sep);}
+.d-row:last-child{border-bottom:none;}
+.d-lbl{font-size:13px;color:var(--label3);flex-shrink:0;min-width:78px;}
+.d-val{font-size:17px;font-weight:600;color:var(--label);flex:1;min-width:0;text-align:left;word-break:break-word;}
+.copy-pill{flex-shrink:0;background:var(--fill);border:none;border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:600;font-family:var(--font);cursor:pointer;color:var(--blue);transition:all .15s;}
+.copy-pill.copied{background:var(--label);color:#fff;}
 </style>
 </head>
 <body>
@@ -1243,6 +1249,7 @@ async function openDocDetail(id){
   const d = DB.documents.find(x=>x.id===id);
   const fam = DB.family.find(f=>f.id===d.familyId);
   const meta = docTypeMeta(d.type);
+  const st = statusOf(d);
   let imgHtml = '';
   if(d.hasImage && d.imageFileId){
     imgHtml = `<button type="button" class="btn btn-gray" style="margin:0 0 10px;" onclick="loadDocDetailImage('${d.id}')">📷 הצג תמונת מסמך</button>`;
@@ -1251,26 +1258,54 @@ async function openDocDetail(id){
     ['שם', fam?fam.nameHe:''],
     ['שם באנגלית', fam?fam.nameEn:''],
     ['תאריך לידה', fam&&fam.birthDate?formatDDMMYYYY(fam.birthDate):''],
-    ['סוג מסמך', meta.label],
     ['מספר מסמך', d.docNumber],
     ['מדינה', d.country],
     ['תאריך הנפקה', formatDDMMYYYY(d.issueDate)],
     ['תאריך תפוגה', formatDDMMYYYY(d.expiryDate)],
     ['הערות', d.notes]
   ].filter(r=>r[1]);
-  const allText = rows.map(r=>r[0]+': '+r[1]).join('\n');
+  const allText = [['שם', fam?fam.nameHe:''],['סוג מסמך', meta.label],...rows.slice(1)].filter(r=>r[1]).map(r=>r[0]+': '+r[1]).join('\n');
   const rowsHtml = rows.map(r=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--sep);">
-      <div style="font-size:15px;min-width:0;"><b>${r[0]}:</b> <span style="word-break:break-word;">${r[1]}</span></div>
-      <button class="copy-btn" data-copy="${escAttr(r[1])}" style="flex-shrink:0;background:var(--fill);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:var(--font);cursor:pointer;color:var(--blue);">📋 העתק</button>
+    <div class="d-row">
+      <div class="d-lbl">${r[0]}</div>
+      <div class="d-val">${r[1]}</div>
+      <button class="copy-pill" data-copy="${escAttr(r[1])}" onclick="copyPillClick(this)">העתק</button>
     </div>`).join('');
+  const remLabels = REMINDER_OPTIONS.filter(r=>d.reminders&&d.reminders.includes(r.days)).map(r=>r.label);
+  const remText = remLabels.length ? remLabels.join(' · ') : 'אין תזכורות מוגדרות';
   openSheet(`
-    <div class="sheet-header"><h2>${meta.label}</h2><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-    <div style="margin:8px 0 4px;">${rowsHtml}</div>
-    <div id="docDetailImg">${imgHtml}</div>
-    <button data-copy="${escAttr(allText)}" onclick="copyText(this.getAttribute('data-copy'))" style="display:block;width:100%;background:rgba(30,145,102,.1);color:var(--green);border:none;border-radius:11px;padding:10px;font-size:13.5px;font-weight:600;font-family:var(--font);cursor:pointer;margin-bottom:10px;">📋 העתק הכל (לצ'ק-אין / שליחה)</button>
-    <button class="btn btn-blue" onclick="openDocForm('${d.id}')">✏️ עריכה</button>
+    <div class="sheet-header"><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+    <div style="text-align:center;">
+      <div style="font-size:56px;line-height:1;margin-bottom:8px;">${ICON_EMOJI[d.type]||ICON_EMOJI.other}</div>
+      <div style="font-size:22px;font-weight:700;color:var(--label);">${meta.label}</div>
+      <div style="font-size:15px;color:var(--label3);margin-top:2px;">${fam?fam.nameHe:''}</div>
+      <div style="display:inline-block;margin-top:10px;padding:6px 16px;border-radius:20px;background:var(--fill);color:var(--label2);font-size:13px;font-weight:600;">${daysLabel(daysUntil(d.expiryDate))}</div>
+    </div>
+    <div class="form-card" style="margin-top:18px;padding:2px 14px;">${rowsHtml}</div>
+    <div id="docDetailImg" style="margin-top:12px;">${imgHtml}</div>
+    <button data-copy="${escAttr(allText)}" onclick="copyAllClick(this)" class="btn btn-blue" style="margin-top:2px;">📋 העתק הכל</button>
+    <div style="text-align:center;font-size:12.5px;color:var(--label3);margin:2px 0 14px;">🔔 תזכורות: ${remText}</div>
+    <button class="btn btn-gray" onclick="openDocForm('${d.id}')">✏️ עריכה</button>
+    <button class="btn btn-gray" onclick="toggleArchiveDoc('${d.id}')">${d.archived?'📤 שחזור מהארכיון':'🗄️ העברה לארכיון'}</button>
+    <button style="display:block;width:100%;background:none;border:none;color:var(--red);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;padding:8px;margin-top:2px;" onclick="deleteDocConfirm('${d.id}')">מחיקת מסמך</button>
   `);
+}
+function copyPillClick(btn){
+  const text = btn.getAttribute('data-copy');
+  copyText(text, ()=>{
+    const orig = btn.textContent;
+    btn.textContent = '✓ הועתק';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
+}
+function copyAllClick(btn){
+  const text = btn.getAttribute('data-copy');
+  copyText(text, ()=>{
+    const orig = btn.textContent;
+    btn.textContent = '✓ הועתק';
+    setTimeout(()=>{ btn.textContent = orig; }, 1800);
+  });
 }
 function openImageGallery(){
   const withImages = DB.documents.filter(d=>d.hasImage && d.imageFileId && !d.archived);
@@ -1335,15 +1370,15 @@ async function loadDocDetailImage(id){
   }
 }
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/\n/g,'&#10;'); }
-function copyText(text){
+function copyText(text, onSuccess){
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>toast('הועתק ✓')).catch(()=>copyFallback(text));
-  } else { copyFallback(text); }
+    navigator.clipboard.writeText(text).then(()=>{ if(onSuccess) onSuccess(); else toast('הועתק ✓'); }).catch(()=>copyFallback(text, onSuccess));
+  } else { copyFallback(text, onSuccess); }
 }
-function copyFallback(text){
+function copyFallback(text, onSuccess){
   const ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
   document.body.appendChild(ta); ta.focus(); ta.select();
-  try{ document.execCommand('copy'); toast('הועתק ✓'); }catch(e){ toast('לא ניתן להעתיק'); }
+  try{ document.execCommand('copy'); if(onSuccess) onSuccess(); else toast('הועתק ✓'); }catch(e){ toast('לא ניתן להעתיק'); }
   ta.remove();
 }
 document.addEventListener('click', e=>{
